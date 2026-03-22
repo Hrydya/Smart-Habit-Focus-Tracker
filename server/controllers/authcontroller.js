@@ -25,7 +25,7 @@ const login = async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ msg: "Invalid Credentials" });
         }
-
+        //header.payload.signature
         const token = jwt.sign(
             { userId: user._id },
             process.env.JWT_SECRET,
