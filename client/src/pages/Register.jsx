@@ -9,7 +9,7 @@ export default function Register(){
     const [password,setPassword] = useState('')
     const [confirmpassword,setConfirmPassword]= useState('')
     const [error,setError] = useState('')
-    const {setToken} = useContext(AuthContext)
+    const {saveToken} = useContext(AuthContext)
     const navigate= useNavigate()
 
     const handleSubmit= async (e)=>{
@@ -21,7 +21,7 @@ export default function Register(){
         try{
 
             const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`,{name,email,password,confirmpassword})
-            setToken(res.data.token);
+            saveToken(res.data.token);
             navigate('/dashboard')
         }
         catch{

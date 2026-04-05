@@ -7,14 +7,14 @@ export default function Login() {
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
     const [error,setError] = useState('');
-    const {setToken} = useContext(AuthContext);
+    const {saveToken} = useContext(AuthContext);
     const navigate = useNavigate()
     
     const handleSubmit = async (e)=>{
         e.preventDefault();
         try{
             const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`,{email,password});
-            setToken(res.data.token);
+            saveToken(res.data.token);
             navigate('/dashboard')
         }
         catch{

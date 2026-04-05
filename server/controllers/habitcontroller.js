@@ -39,4 +39,22 @@ const getHabits = async( req, res)=>{
 
 
 }
-module.exports = {createHabit,deleteHabit, getHabits}
+const completeHabit = async (req, res) => {
+    try {
+        const { userId } = req.user
+        const habitId = req.params.id
+        const habit = await Habit.findOne({ _id: habitId, user: userId })
+        if (!habit) {
+            return res.status(404).json({ msg: "habit not found" })
+        }
+        habit.completed = true
+        habit.streak = habit.streak + 1
+        await habit.save()
+        res.status(200).json({ habit })
+    } catch (error) {
+        res.status(500).json({ msg: error.message })
+    }
+}
+
+
+module.exports = {createHabit,deleteHabit, getHabits,completeHabit}
