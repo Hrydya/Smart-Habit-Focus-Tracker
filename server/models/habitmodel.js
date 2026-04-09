@@ -18,6 +18,10 @@ const habitschema= new mongoose.Schema({
         streak:{
             type:Number,
             default:0
+        },
+        completedDates:{
+            type:[Date],
+            default:[]
         }
 
 })

@@ -1,25 +1,47 @@
-import {useState, useContext} from 'react'
-import {useNavigate} from 'react-router-dom'
+import { useState, useContext } from 'react'
+import { useNavigate,Link } from 'react-router-dom'
 import axios from 'axios'
-import {AuthContext} from '../context/AuthContext.js'
+import { AuthContext } from '../context/AuthContext.js'
 
 export default function Login() {
-    const [email,setEmail] = useState('');
-    const [password,setPassword] = useState('');
-    const [error,setError] = useState('');
-    const {saveToken} = useContext(AuthContext);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+   
+    const { saveToken } = useContext(AuthContext);
     const navigate = useNavigate()
-    
-    const handleSubmit = async (e)=>{
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        try{
-            const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`,{email,password});
+        if (!email || !password) {
+            setError("All fields are required");
+            return;
+        }
+        try {
+      
+            const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, { email, password });
             saveToken(res.data.token);
             navigate('/dashboard')
         }
-        catch{
-            setError('Invalid email or passowrd');
+        catch (err) {
+            if (err.response) {
+                const status = err.response.status;
+                const message = err.response.data?.message;
+
+                if (status === 401) {
+                    setError("Invalid email or password");
+                } else if (status === 400) {
+                    setError(message || "Invalid input");
+                } else if (status === 500) {
+                    setError("Server error. Try again later.");
+                } else {
+                    setError(message || "Request failed");
+                }
+            } else {
+                setError("Network error. Please check your connection.");
+            }
         }
+       
     }
 
 
@@ -30,25 +52,30 @@ export default function Login() {
                     <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
                     {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
                     <form onSubmit={handleSubmit}>
+                       
                         <input
                             type="email"
                             placeholder="Email"
                             className="w-full border p-2 rounded mb-4"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                       
+                            required
+                            onChange={(e) => { setEmail(e.target.value); setError(''); }}
                         />
                         <input
                             type="password"
                             placeholder="Password"
                             className="w-full border p-2 rounded mb-4"
+                            
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            onChange={(e) => { setPassword(e.target.value); setError(''); }}
                         />
                         <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
                             Login
                         </button>
                     </form>
-                    <p className="text-center mt-4 text-sm">Don't have an account? <a href="/register" className="text-blue-500">Register</a></p>
+                    <p className="text-center mt-4 text-sm">Don't have an account? <Link to ="/register" className="text-blue-500">Register</Link></p>
                 </div>
             </div>
         </>

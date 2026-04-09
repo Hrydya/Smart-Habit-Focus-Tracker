@@ -2,7 +2,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import Timer from './pages/Timer.jsx'
+import Analytics from './pages/Analytics.jsx'
 import { AuthProvider } from './context/AuthContext.js'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 export default function App(){
    return (
@@ -12,10 +15,11 @@ export default function App(){
                    <Route path='/' element={<Login />} />
                    <Route path="/login" element={<Login />} />
                    <Route path="/register" element={<Register />} />
-                   <Route path="/dashboard" element={<Dashboard />} />
+                   <Route path="/dashboard" element={< Dashboard />} />
+                   <Route path="/timer" element={< Timer />} />
+                   <Route path="/analytics" element={< Analytics />} />
                </Routes>
            </Router>
     </AuthProvider>
-      
    )
 }

@@ -2,12 +2,17 @@
 import { useEffect, useState, useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import axios from 'axios'
+import {Link} from 'react-router-dom'
+
+
 
 export default function Dashboard() {
+
     const [habits, setHabits] = useState([])
     const [habitName, setHabitName] = useState('')
     const { token, logout } = useContext(AuthContext)
-
+    
+    
 
     async function fetchHabits() {
         try {
@@ -57,11 +62,28 @@ export default function Dashboard() {
     }
 
     useEffect(() => {
+
         fetchHabits()
+        
     }, [])
 
     return (
+
+        
+
+        
         <div className="min-h-screen bg-gray-100 p-8">
+
+                <nav className="bg-white shadow-sm mb-6 px-8 py-4 flex justify-between items-center">
+                    <h1 className="text-xl font-bold text-indigo-600">Smart Habit & Focus Tracker </h1>
+                    <div className="flex gap-4">
+                        <Link to="/dashboard" className="text-gray-600 hover:text-indigo-600 font-medium">Dashboard</Link>
+                        <Link to="/analytics" className="text-gray-600 hover:text-indigo-600 font-medium">Analytics</Link>
+                        <Link to="/timer" className="text-gray-600 hover:text-indigo-600 font-medium">Timer</Link>
+                        <button onClick={logout} className="text-red-500 hover:underline font-medium">Logout</button>
+                    </div>
+                </nav>
+
             <div className="max-w-xl mx-auto">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold">My Habits</h1>
@@ -84,14 +106,27 @@ export default function Dashboard() {
                 {habits.map((habit) => (
                     <div key={habit._id} className="bg-white p-4 rounded-lg shadow-sm mb-3 flex justify-between items-center">
                         <div>
-                            <p className="font-medium">{habit.name}</p>
+                            <p className={`font-medium ${habit.completed ? 'line-through text-gray-400' : ''}`}>
+                                {habit.name}
+                            </p>
                             <p className="text-sm text-gray-500">Streak: {habit.streak} days</p>
                         </div>
+
                         <div className="flex gap-2">
-                            <button onClick={() => completeHabit(habit._id)} className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm">
-                                Complete
+                            <button
+                                onClick={() => completeHabit(habit._id)}
+                                className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${habit.completed
+                                        ? "bg-green-500 border-green-500 text-white"
+                                        : "border-gray-300 bg-transparent text-transparent hover:border-green-400"
+                                    }`}
+                            >
+                                {habit.completed ? "✓" : ""}
                             </button>
-                            <button onClick={() => deleteHabit(habit._id)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">
+
+                            <button
+                                onClick={() => deleteHabit(habit._id)}
+                                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                            >
                                 Delete
                             </button>
                         </div>
