@@ -4,67 +4,76 @@ import { AuthContext } from '../context/AuthContext'
 import axios from 'axios'
 import {Link} from 'react-router-dom'
 
-
-
 export default function Dashboard() {
 
     const [habits, setHabits] = useState([])
     const [habitName, setHabitName] = useState('')
     const { token, logout } = useContext(AuthContext)
-    
-    
 
     async function fetchHabits() {
         try {
             const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/habits`, {
                 headers: { Authorization: `Bearer ${token}` }
+                
             })
+            console.log(data);
             setHabits(data.habits)
         } catch (err) {
-            console.log(err.response)
+            console.error(err?.response?.data || err.message)
         }
     }
-
     const addHabit = async (e) => {
         e.preventDefault()
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/api/habits`,
+            const {data}= await axios.post(`${process.env.REACT_APP_API_URL}/api/habits`,
                 { name: habitName },
                 { headers: { Authorization: `Bearer ${token}` } }
             )
             setHabitName('')
-            fetchHabits()
+            setHabits(prev => [...prev, data.habit]);
         } catch (err) {
-            console.log(err.response)
+            console.error(err?.response?.data || err.message)
         }
     }
     const completeHabit = async (id) => {
+        //updating frontend first for fast ui 
+        const prevState= [...habits];
+        setHabits(prev=>
+            prev.map(h=>
+                 h._id === id? {...h, completed :!h.completed}:h ) 
+        )
         try {
             await axios.patch(`${process.env.REACT_APP_API_URL}/api/habits/${id}/complete`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             )
-            fetchHabits()
         }
         catch (err) {
-            console.log(err.response)
+            setHabits(prevState);
+            console.error(err?.response?.data || err.message)
+            fetchHabits()
         }
     }
     const deleteHabit = async (id) => {
+        const prevState = [...habits];
+        setHabits(prev =>
+            prev.filter(habit => habit._id !== id)
+        )
         try {
             await axios.delete(`${process.env.REACT_APP_API_URL}/api/habits/${id}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             )
-            setHabits(habits.filter(habit => habit._id !== id))
+            
         } catch (err) {
-            console.log("Error deleting habit")
+            setHabits(prevState);
+            console.error("Error deleting habit")
+            fetchHabits()
+            
         }
     }
 
     useEffect(() => {
-
         fetchHabits()
-        
     }, [])
 
     return (
@@ -75,7 +84,7 @@ export default function Dashboard() {
         <div className="min-h-screen bg-gray-100 p-8">
 
                 <nav className="bg-white shadow-sm mb-6 px-8 py-4 flex justify-between items-center">
-                    <h1 className="text-xl font-bold text-indigo-600">Smart Habit & Focus Tracker </h1>
+                    <h1 className="text-xl font-bold text-indigo-600">Habit & Focus Tracker </h1>
                     <div className="flex gap-4">
                         <Link to="/dashboard" className="text-gray-600 hover:text-indigo-600 font-medium">Dashboard</Link>
                         <Link to="/analytics" className="text-gray-600 hover:text-indigo-600 font-medium">Analytics</Link>
@@ -87,7 +96,7 @@ export default function Dashboard() {
             <div className="max-w-xl mx-auto">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold">My Habits</h1>
-                    <button onClick={logout} className="text-sm text-red-500 hover:underline">Logout</button>
+                    
                 </div>
 
                 <form onSubmit={addHabit} className="flex gap-2 mb-6">

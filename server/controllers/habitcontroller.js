@@ -14,31 +14,40 @@ const createHabit= async(req,res)=>{
 }
 const deleteHabit= async(req,res)=>{
     try{
-       
         const{userId}= req.user;
         const habitId = req.params.id;
         const habit = await Habit.findOne({_id:habitId, user:userId});
         if (!habit) {
             return res.status(404).json({ msg: "habit not found" })
         }
-         await habit.deleteOne();
+        await habit.deleteOne();
         res.status(200).json({ msg: "habit deleted" })
     }
     catch (error) {
         res.status(500).json({ msg: error.message });
     }
 }
-const getHabits = async( req, res)=>{
-    try{
-    const {userId}= req.user;
-    const habits = await Habit.find({user:userId});
-    res.status(200).json({habits});
-    }
-    catch(error){
+const getHabits = async (req, res) => {
+    try {
+        const { userId } = req.user;
+        const habits = await Habit.find({ user: userId });
+        const today = new Date().toISOString().split('T')[0];
+
+        for (let habit of habits) {
+            const lastDate = habit.completedDates[habit.completedDates.length - 1];
+            const lastDateStr = lastDate ? new Date(lastDate).toISOString().split('T')[0] : null;
+
+            if (lastDateStr !== today) {
+                habit.completed = false;
+                await habit.save();
+            }
+        }
+
+        const updatedHabits = await Habit.find({ user: userId });
+        res.status(200).json({ habits: updatedHabits });
+    } catch (error) {
         res.status(500).json({ msg: error.message });
     }
-
-
 }
 const completeHabit = async (req, res) => {
     try {
@@ -76,52 +85,68 @@ const getAnalytics = async (req, res) => {
         const { userId } = req.user
         const habits = await Habit.find({ user: userId })
 
-        // streak leaderboard
-        const streakLeaderboard = habits.map(h => ({
-            name: h.name,
-            streak: h.streak
-        })).sort((a, b) => b.streak - a.streak)
+        //Leaderboard
+        const streakLeaderboard = habits
+            .map(h => ({
+                name: h.name,
+                streak: h.streak
+            }))
+            .sort((a, b) => b.streak - a.streak)
 
-        // completions per day this week
-        const last7Days = [...Array(7)].map((_, i) => {
-            const d = new Date()
-            d.setDate(d.getDate() - i)
-            return d.toISOString().split('T')[0]
-        }).reverse()
-
-        const completionsPerDay = last7Days.map(date => ({
-            date,
-            count: habits.reduce((acc, habit) => {
-                return acc + habit.completedDates.filter(d =>
-                    d.toISOString().split('T')[0] === date
-                ).length
-            }, 0)
-        }))
-
-        // pie chart data
+        //Pie chart 
         const habitCompletion = habits.map(h => ({
             name: h.name,
             value: h.completedDates.length
         }))
 
-        // smart insight
-        const weekdayCompletions = habits.reduce((acc, habit) => {
-            return acc + habit.completedDates.filter(d =>
-                d.getDay() !== 0 && d.getDay() !== 6
-            ).length
-        }, 0)
+        //Last 7 days labels
+        const last7Days = []
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date()
+            d.setDate(d.getDate() - i)
+            last7Days.push(d.toISOString().split('T')[0])
+        }
 
-        const weekendCompletions = habits.reduce((acc, habit) => {
-            return acc + habit.completedDates.filter(d =>
-                d.getDay() === 0 || d.getDay() === 6
-            ).length
-        }, 0)
+        // 4. Count completions per day (SIMPLE LOOP)
+        const completionsPerDay = []
 
-        const insight = weekdayCompletions > weekendCompletions
-            ? "You complete habits more on weekdays! 💪"
-            : "You complete habits more on weekends! 🎉"
+        for (let date of last7Days) {
+            let count = 0;
+            for (let habit of habits) {
+                for (let d of habit.completedDates) {
+                    if (new Date(d).toISOString().split('T')[0] === date) {
+                        count++
+                    }
+                }
+            }
+            completionsPerDay.push({ date, count })
+        }
 
-        res.status(200).json({ streakLeaderboard, completionsPerDay, habitCompletion, insight })
+        // 5. Weekday / weekend
+        let weekday = 0
+        let weekend = 0
+
+        for (let habit of habits) {
+            for (let d of habit.completedDates) {
+                const day = new Date(d).getDay()
+
+                if (day === 0 || day === 6) weekend++
+                else weekday++
+            }
+        }
+
+        const insight =
+            weekday > weekend
+                ? "You complete habits more on weekdays! 💪"
+                : "You complete habits more on weekends! 🎉"
+
+        res.status(200).json({
+            streakLeaderboard,
+            completionsPerDay,
+            habitCompletion,
+            insight
+        })
+
     } catch (error) {
         res.status(500).json({ msg: error.message })
     }
