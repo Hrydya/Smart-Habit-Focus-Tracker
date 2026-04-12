@@ -15,9 +15,9 @@ export default function App(){
                    <Route path='/' element={<Login />} />
                    <Route path="/login" element={<Login />} />
                    <Route path="/register" element={<Register />} />
-                   <Route path="/dashboard" element={< Dashboard />} />
-                   <Route path="/timer" element={< Timer />} />
-                   <Route path="/analytics" element={< Analytics />} />
+                   <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                   <Route path="/timer" element={<ProtectedRoute><Timer /></ProtectedRoute>} />
+                   <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                </Routes>
            </Router>
     </AuthProvider>
