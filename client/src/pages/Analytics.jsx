@@ -9,6 +9,7 @@ export default function Analytics() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
       const { token, logout } = useContext(AuthContext)
+    // eslint-disable-next-line
     useEffect(() => { fetchAnalytics() }, [])
 
     async function fetchAnalytics() {

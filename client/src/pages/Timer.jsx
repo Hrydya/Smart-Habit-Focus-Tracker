@@ -8,6 +8,8 @@ export default function App() {
     const [mode, setMode] = useState("Focus");
     const [cycles, setCycles] = useState(0);
   const {logout } = useContext(AuthContext)
+  
+    // eslint-disable-next-line
     useEffect(() => {
         let timer;
 

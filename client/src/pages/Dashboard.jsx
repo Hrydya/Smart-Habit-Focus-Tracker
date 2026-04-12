@@ -84,7 +84,7 @@ export default function Dashboard() {
             
         }
     }
-
+    // eslint-disable-next-line
     useEffect(() => {
         if (!token) return ;
         fetchHabits()
