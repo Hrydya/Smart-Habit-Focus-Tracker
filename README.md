@@ -7,7 +7,8 @@ Frontend: https://habit-and-focus-tracker.vercel.app/
 Backend API: https://habit-and-focus-tracker.onrender.com/
 
 Note:
-The backend is hosted on Render (free tier). It may take ~20–30 seconds to respond on the first request after inactivity, as the server goes to sleep when not used.
+The backend is hosted on Render’s free tier and may take 20–30 seconds to respond on the first request due to cold starts.
+The live site may occasionally be unavailable due to hosting limitations.
 
 ---
 
